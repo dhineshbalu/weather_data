@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+<script>
+ var data;
+ $(document).ready(
+     function()
+     {
+        $("#enter1").click(function(){
+        var city = $("#city").val();
+        $.ajax({
+            type:"GET",
+            dataType: "jsonp",
+            url: "http://api.openweathermap.org/data/2.5/forecast?q=" + city + "&mode=xml&appid=08e126d5a04a75b9d9b46562020ec80f", 
+            success: function(result) 
+            {
+               console.log(result);
+          
+           $("#lat").text(result.city.coord.lat);
+           $("#lon").text(result.city.coord.lon);
+           $("#pop").text(result.city.population);
+           $("#temp").text(result.list[0].main.temp);
+           $("#humi").text(result.list[0].main.humidity);
+           $("#press").text(result.list[0].main.pressure);
+           },
+           error: (err) => {
+            console.log('In error callback');
+            console.log(err);
+        }
+    });
+
+   
+    });
+    $("#enter2").click(function() {
+        var city = $("#city").val();
+        $.ajax({
+            type:"GET",
+            dataType: "jsonp",
+            url: "http://api.openweathermap.org/data/2.5/forecast?q=" + city + "&mode=xml&appid=08e126d5a04a75b9d9b46562020ec80f", 
+            success: function(data) 
+            {
+            
+              dates = data.list.map(function(ele)
+            {
+                return moment(ele.dt * 1000).format('dddd, h:mm a');
+            });
+
+            console.log(dates);
+
+            temps = data.list.map(function(ele)
+        {
+    return Math.round(ele.main.temp - 270);
+        });
+
+         console.log(temps);
+         plot(temps,dates);
+            },
+              error: (err) => {
+            console.log('In error callback');
+            console.log(err);
+        }
+      
+    });
+
+});
+
+    const plot = (tempArr, datesArr) => {
+        Highcharts.chart('container', {
+            chart: {
+                type: 'spline'
+            },
+            title: {
+                text: 'Monthly Average Temperature'
+            },
+            xAxis: {
+                categories: datesArr
+            },
+            yAxis: {
+                title: {
+                    text: 'Temperature'
+                },
+                labels: {
+                    formatter: function () { return this.value + '°'; }
+                }
+            },
+            tooltip: {
+                crosshairs: true,
+                shared: true
+            },
+            plotOptions: {
+                spline: {
+                    marker: {
+                        radius: 4,
+                        lineColor: '#666666',
+                        lineWidth: 1
+                    }
+                }
+            },
+            series: [{
+                name: city,
+                marker: {
+                    symbol: 'square'
+                },
+                data: tempArr
+
+            }]
+        });
+    }
+     });
+    
+
+
+
+
+  
+</script>
+<style>
+    .form-inline
+    {
+        margin-left: 250px;
+        margin-top: 50px;
+    }
+    .table
+     {
+         margin-top: 50px;
+     }
+     .container
+     {
+        margin-top: 50px; 
+     }
+</style>
+</head>
+<body>
+        <form class="form-inline">
+            <div class="form-group">
+              <label>Enter city name </label>
+              <input type="text" class="form-control" id="city">
+            </div>
+            <button type="button" class="btn btn-primary" id="enter1">Table</button>
+            <button type="button" class="btn btn-primary" id="enter2">Chart</button>
+        </form>
+
+
+       <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Population</th>
+            <th>Temperature</th>
+            <th>Humidity</th>
+            <th> Pressure</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td id="lat"></td>
+            <td id="lon"></td>
+            <td id="pop"></td>
+            <td id="temp"></td>
+            <td id="humi"></td>
+            <td id="press"></td>
+          </tr>
+        </tbody>
+      </table>
+
+
+  <div id="container" style="width:100%;height:400px;"></div>
+  
+</body>
+</html>
